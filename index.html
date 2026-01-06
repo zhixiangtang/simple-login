@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简单登录系统</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        
+        input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 1rem;
+            color: #666;
+        }
+        
+        .register-link a {
+            color: #4CAF50;
+            text-decoration: none;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-message {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>用户登录</h1>
+        
+        <div class="error-message" id="errorMessage"></div>
+        
+        <form id="loginForm" action="/login" method="POST">
+            <div class="form-group">
+                <label for="username">用户名：</label>
+                <input type="text" id="username" name="username" required placeholder="请输入用户名">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码：</label>
+                <input type="password" id="password" name="password" required placeholder="请输入密码">
+            </div>
+            
+            <button type="submit">登录</button>
+        </form>
+        
+        <div class="register-link">
+            还没有账户？ <a href="/register">立即注册</a>
+        </div>
+        
+        <div class="demo-credentials">
+            <p style="margin-top: 1rem; font-size: 0.9rem; color: #666; text-align: center;">
+                测试账户：<br>
+                admin / admin123<br>
+                user / user123
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        // 简单的表单验证
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (!username || !password) {
+                e.preventDefault();
+                errorMessage.textContent = '用户名和密码不能为空';
+                errorMessage.style.display = 'block';
+                return false;
+            }
+            
+            // 可以在这里添加更多验证逻辑
+            if (password.length < 4) {
+                e.preventDefault();
+                errorMessage.textContent = '密码长度至少4位';
+                errorMessage.style.display = 'block';
+                return false;
+            }
+            
+            return true;
+        });
+    </script>
+</body>
+</html>
