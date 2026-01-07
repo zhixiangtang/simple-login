@@ -1,766 +1,96 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>手势交互3D粒子圣诞树</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>3D Particle Christmas Tree</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.9.1/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0a2e38 0%, #1a1a2e 100%);
-            color: #fff;
-            overflow-x: hidden;
-            min-height: 100vh;
-            position: relative;
-        }
-        
-        .container {
-            max-width: 100%;
-            padding: 15px;
-            position: relative;
-        }
-        
-        header {
-            text-align: center;
-            padding: 20px 10px;
-            background: rgba(0, 30, 40, 0.7);
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(0, 150, 200, 0.2);
-        }
-        
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 10px;
-            color: #4dff91;
-            text-shadow: 0 0 10px rgba(77, 255, 145, 0.5);
-        }
-        
-        .subtitle {
-            font-size: 1rem;
-            color: #a0e7ff;
-            margin-bottom: 15px;
-        }
-        
-        .instructions {
-            background: rgba(0, 50, 70, 0.6);
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-top: 10px;
-        }
-        
-        .instructions i {
-            color: #4dff91;
-            margin-right: 8px;
-        }
-        
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .tree-container {
-            position: relative;
-            width: 100%;
-            height: 60vh;
-            background: rgba(0, 20, 30, 0.7);
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(0, 200, 255, 0.2);
-            touch-action: none;
-        }
-        
-        #tree-canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            padding: 15px;
-            background: rgba(0, 30, 40, 0.7);
-            border-radius: 15px;
-            margin-top: 10px;
-        }
-        
-        .control-btn {
-            background: linear-gradient(145deg, #0a5a7a, #083a4a);
-            border: none;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-        }
-        
-        .control-btn:active {
-            transform: scale(0.95);
-            background: linear-gradient(145deg, #083a4a, #0a5a7a);
-        }
-        
-        .photos-section {
-            background: rgba(0, 30, 40, 0.7);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(0, 150, 200, 0.2);
-        }
-        
-        .photos-section h2 {
-            font-size: 1.5rem;
-            margin-bottom: 15px;
-            color: #4dff91;
-            text-align: center;
-        }
-        
-        .photos-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 15px;
-        }
-        
-        .photo-item {
-            border-radius: 10px;
-            overflow: hidden;
-            height: 150px;
-            position: relative;
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-        }
-        
-        .photo-item:active {
-            transform: scale(0.98);
-        }
-        
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .photo-label {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 8px;
-            font-size: 0.8rem;
-            text-align: center;
-        }
-        
-        .tree-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            color: #a0e7ff;
-        }
-        
-        .tree-stats {
-            display: flex;
-            gap: 15px;
-        }
-        
-        .stat {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: #88d3ff;
-            border-top: 1px solid rgba(0, 150, 200, 0.2);
-        }
-        
-        .github-link {
-            color: #4dff91;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        
-        /* 响应式设计 */
-        @media (min-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-            
-            h1 {
-                font-size: 2.2rem;
-            }
-            
-            .subtitle {
-                font-size: 1.2rem;
-            }
-            
-            .tree-container {
-                height: 65vh;
-            }
-            
-            .photos-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        
-        @media (min-width: 1024px) {
-            .main-content {
-                flex-direction: row;
-                align-items: flex-start;
-            }
-            
-            .tree-container {
-                flex: 2;
-                height: 70vh;
-            }
-            
-            .photos-section {
-                flex: 1;
-                height: 70vh;
-                overflow-y: auto;
-            }
-            
-            .photos-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        
-        /* 加载动画 */
-        .loader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 10;
-            text-align: center;
-        }
-        
-        .spinner {
-            border: 5px solid rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            border-top: 5px solid #4dff91;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        /* 手势提示 */
-        .gesture-hint {
-            position: absolute;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            color: #a0e7ff;
-            font-size: 0.9rem;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 10px;
-            margin: 0 20px;
-            z-index: 5;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.7; }
-            50% { opacity: 1; }
-            100% { opacity: 0.7; }
-        }
+        body { margin: 0; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-tree"></i> 手势交互3D粒子圣诞树</h1>
-            <p class="subtitle">移动端专属 - 支持手势旋转、缩放</p>
-            <div class="instructions">
-                <p><i class="fas fa-hand-point-up"></i> 单指拖动旋转视角 | <i class="fas fa-hand-pointer"></i> 双指捏合缩放</p>
-                <p><i class="fas fa-mobile-alt"></i> 专为移动设备优化 | <i class="fas fa-snowflake"></i> 点击按钮切换特效</p>
-            </div>
-        </header>
-        
-        <div class="main-content">
-            <div class="tree-container">
-                <div class="loader" id="loader">
-                    <div class="spinner"></div>
-                    <p>正在加载3D圣诞树...</p>
-                </div>
-                <canvas id="tree-canvas"></canvas>
-                <div class="gesture-hint" id="gestureHint">
-                    <i class="fas fa-hand-pointer"></i> 使用手势旋转和缩放圣诞树
-                </div>
-            </div>
-            
-            <div class="tree-info">
-                <div class="tree-stats">
-                    <div class="stat">
-                        <i class="fas fa-star" style="color: #ffdd00;"></i>
-                        <span id="particleCount">2500</span> 粒子
-                    </div>
-                    <div class="stat">
-                        <i class="fas fa-bullseye" style="color: #ff6b6b;"></i>
-                        <span id="treeSize">中等</span> 尺寸
-                    </div>
-                </div>
-                <div class="controls">
-                    <button class="control-btn" id="resetBtn">
-                        <i class="fas fa-redo"></i> 重置视角
-                    </button>
-                    <button class="control-btn" id="effectBtn">
-                        <i class="fas fa-magic"></i> 切换特效
-                    </button>
-                </div>
-            </div>
-            
-            <div class="photos-section">
-                <h2><i class="fas fa-camera"></i> 圣诞主题照片</h2>
-                <div class="photos-grid">
-                    <div class="photo-item">
-                        <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="圣诞树">
-                        <div class="photo-label">节日圣诞树</div>
-                    </div>
-                    <div class="photo-item">
-                        <img src="https://images.unsplash.com/photo-1482517967863-00e15c9b44be?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="圣诞礼物">
-                        <div class="photo-label">圣诞礼物</div>
-                    </div>
-                    <div class="photo-item">
-                        <img src="https://images.unsplash.com/photo-1512389142860-9c449e38a2f0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="圣诞装饰">
-                        <div class="photo-label">圣诞装饰</div>
-                    </div>
-                    <div class="photo-item">
-                        <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80" alt="圣诞雪景">
-                        <div class="photo-label">圣诞雪景</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <footer>
-            <p>专为移动设备优化的3D粒子圣诞树 | 完全使用HTML/CSS/JavaScript实现</p>
-            <p>可在GitHub Pages部署，支持微信直接访问</p>
-            <a href="https://github.com" class="github-link" target="_blank">
-                <i class="fab fa-github"></i> 查看GitHub项目
-            </a>
-        </footer>
-    </div>
 
-    <script>
-        // 全局变量
-        let scene, camera, renderer, particles, particleSystem;
-        let mouseX = 0, mouseY = 0;
-        let windowHalfX = window.innerWidth / 2;
-        let windowHalfY = window.innerHeight / 2;
-        let touchStartX = 0, touchStartY = 0;
-        let isDragging = false;
-        let currentRotationX = 0, currentRotationY = 0;
-        let targetRotationX = 0, targetRotationY = 0;
-        let currentZoom = 1, targetZoom = 1;
-        let particleCount = 2500;
-        let effectType = 0; // 0: 默认，1: 雪花，2: 闪烁
-        let particleColors = [0x4dff91, 0xff6b6b, 0xffdd00, 0x4da6ff, 0xff4da6];
-        let originalPositions = [];
+<canvas id="canvas"></canvas>
 
-        // 初始化Three.js场景
-        function init() {
-            // 创建场景
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a2e38);
-            
-            // 创建相机
-            const container = document.querySelector('.tree-container');
-            camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-            camera.position.z = 20;
-            
-            // 创建渲染器
-            renderer = new THREE.WebGLRenderer({ 
-                canvas: document.getElementById('tree-canvas'),
-                antialias: true,
-                alpha: true 
+<script>
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas') });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    let particles;
+    const particleCount = 3000;
+    const particleGeometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    
+    for (let i = 0; i < particleCount; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 10;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+    }
+    
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const particleMaterial = new THREE.PointsMaterial({ size: 0.1, vertexColors: true });
+    particles = new THREE.Points(particleGeometry, particleMaterial);
+    scene.add(particles);
+
+    camera.position.z = 5;
+
+    const loadingText = document.createElement('div');
+    loadingText.style.position = 'absolute';
+    loadingText.style.color = 'white';
+    loadingText.style.fontSize = '2rem';
+    loadingText.innerText = 'Loading...';
+    document.body.appendChild(loadingText);
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.play();
+
+            const hands = new Hands({locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
             });
-            renderer.setSize(container.clientWidth, container.clientHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            
-            // 创建粒子
-            createParticleTree();
-            
-            // 添加环境光
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-            scene.add(ambientLight);
-            
-            // 添加方向光
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-            directionalLight.position.set(5, 10, 7);
-            scene.add(directionalLight);
-            
-            // 隐藏加载器
-            document.getElementById('loader').classList.add('hidden');
-            
-            // 初始渲染
-            animate();
-            
-            // 添加窗口大小调整监听
-            window.addEventListener('resize', onWindowResize);
-            
-            // 添加事件监听器
-            setupEventListeners();
-        }
-        
-        // 创建粒子圣诞树
-        function createParticleTree() {
-            // 移除旧的粒子系统
-            if (particleSystem) {
-                scene.remove(particleSystem);
-                particleSystem.geometry.dispose();
-                particleSystem.material.dispose();
-            }
-            
-            // 创建粒子几何体
-            const geometry = new THREE.BufferGeometry();
-            const positions = [];
-            const colors = [];
-            originalPositions = [];
-            
-            // 生成圣诞树形状的粒子
-            for (let i = 0; i < particleCount; i++) {
-                // 创建树状结构
-                const layer = Math.floor(i / (particleCount / 10)); // 10层
-                const layerHeight = layer * 0.8;
-                const maxRadius = 5 - (layer * 0.5);
-                const minRadius = 0.5;
-                
-                let angle = Math.random() * Math.PI * 2;
-                let radius = Math.random() * (maxRadius - minRadius) + minRadius;
-                
-                // 越往上半径越小
-                radius *= (1 - layer / 15);
-                
-                // 添加一些随机性
-                radius += (Math.random() - 0.5) * 0.5;
-                
-                const x = Math.cos(angle) * radius;
-                const y = layerHeight - 8; // 将树向下移动
-                const z = Math.sin(angle) * radius;
-                
-                positions.push(x, y, z);
-                originalPositions.push(x, y, z);
-                
-                // 随机颜色，基于层数有一些变化
-                let color;
-                if (layer < 2) {
-                    // 树干 - 棕色
-                    color = new THREE.Color(0x8B4513);
-                } else if (Math.random() > 0.9) {
-                    // 装饰球 - 随机颜色
-                    color = new THREE.Color(particleColors[Math.floor(Math.random() * particleColors.length)]);
-                } else {
-                    // 树叶 - 绿色渐变
-                    const greenIntensity = 0.3 + (layer / 10) * 0.5;
-                    color = new THREE.Color(0, greenIntensity, 0);
-                }
-                
-                colors.push(color.r, color.g, color.b);
-            }
-            
-            // 添加树顶星星
-            const starParticleCount = 100;
-            for (let i = 0; i < starParticleCount; i++) {
-                const radius = 0.5;
-                const angle = Math.random() * Math.PI * 2;
-                const height = Math.random() * 0.5;
-                
-                const x = Math.cos(angle) * radius * Math.random();
-                const y = 2.5 + height;
-                const z = Math.sin(angle) * radius * Math.random();
-                
-                positions.push(x, y, z);
-                originalPositions.push(x, y, z);
-                
-                // 星星颜色 - 金色
-                const color = new THREE.Color(0xFFD700);
-                colors.push(color.r, color.g, color.b);
-            }
-            
-            // 设置几何体属性
-            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-            
-            // 创建粒子材质
-            const material = new THREE.PointsMaterial({
-                size: 0.1,
-                vertexColors: true,
-                transparent: true,
-                opacity: 0.8
+            hands.setOptions({
+                maxNumHands: 1,
+                minDetectionConfidence: 0.7,
+                minTrackingConfidence: 0.5
             });
-            
-            // 创建粒子系统
-            particleSystem = new THREE.Points(geometry, material);
-            scene.add(particleSystem);
-            
-            // 更新粒子计数显示
-            document.getElementById('particleCount').textContent = particleCount + starParticleCount;
-        }
-        
-        // 动画循环
-        function animate() {
-            requestAnimationFrame(animate);
-            
-            // 平滑旋转
-            currentRotationX += (targetRotationX - currentRotationX) * 0.05;
-            currentRotationY += (targetRotationY - currentRotationY) * 0.05;
-            currentZoom += (targetZoom - currentZoom) * 0.05;
-            
-            // 应用旋转和缩放
-            particleSystem.rotation.y = currentRotationX;
-            particleSystem.rotation.x = currentRotationY;
-            camera.position.z = 20 / currentZoom;
-            
-            // 应用特效
-            applyEffects();
-            
-            // 渲染场景
-            renderer.render(scene, camera);
-        }
-        
-        // 应用粒子特效
-        function applyEffects() {
-            if (effectType === 0) return; // 无特效
-            
-            const positions = particleSystem.geometry.attributes.position.array;
-            const time = Date.now() * 0.001;
-            
-            for (let i = 0; i < positions.length; i += 3) {
-                const idx = i / 3;
-                const origX = originalPositions[i];
-                const origY = originalPositions[i + 1];
-                const origZ = originalPositions[i + 2];
-                
-                if (effectType === 1) {
-                    // 雪花飘落效果
-                    positions[i + 1] = origY + Math.sin(time * 2 + idx * 0.1) * 0.1;
-                    positions[i] = origX + Math.cos(time * 1.5 + idx * 0.05) * 0.05;
-                } else if (effectType === 2) {
-                    // 闪烁效果
-                    const scale = 0.9 + 0.2 * Math.sin(time * 5 + idx * 0.01);
-                    positions[i] = origX * scale;
-                    positions[i + 1] = origY * scale;
-                    positions[i + 2] = origZ * scale;
-                }
-            }
-            
-            particleSystem.geometry.attributes.position.needsUpdate = true;
-        }
-        
-        // 窗口大小调整处理
-        function onWindowResize() {
-            const container = document.querySelector('.tree-container');
-            camera.aspect = container.clientWidth / container.clientHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(container.clientWidth, container.clientHeight);
-        }
-        
-        // 设置事件监听器
-        function setupEventListeners() {
-            const container = document.querySelector('.tree-container');
-            const resetBtn = document.getElementById('resetBtn');
-            const effectBtn = document.getElementById('effectBtn');
-            const gestureHint = document.getElementById('gestureHint');
-            
-            // 鼠标事件
-            container.addEventListener('mousedown', onMouseDown);
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-            
-            // 触摸事件
-            container.addEventListener('touchstart', onTouchStart, { passive: false });
-            container.addEventListener('touchmove', onTouchMove, { passive: false });
-            container.addEventListener('touchend', onTouchEnd);
-            
-            // 按钮事件
-            resetBtn.addEventListener('click', resetView);
-            effectBtn.addEventListener('click', toggleEffect);
-            
-            // 隐藏手势提示
-            setTimeout(() => {
-                gestureHint.style.opacity = '0';
-                setTimeout(() => {
-                    gestureHint.style.display = 'none';
-                }, 500);
-            }, 5000);
-            
-            // 防止上下文菜单
-            container.addEventListener('contextmenu', (e) => e.preventDefault());
-        }
-        
-        // 鼠标按下事件
-        function onMouseDown(event) {
-            isDragging = true;
-            mouseX = event.clientX - windowHalfX;
-            mouseY = event.clientY - windowHalfY;
-        }
-        
-        // 鼠标移动事件
-        function onMouseMove(event) {
-            if (!isDragging) return;
-            
-            const deltaX = event.clientX - windowHalfX - mouseX;
-            const deltaY = event.clientY - windowHalfY - mouseY;
-            
-            targetRotationX += deltaX * 0.01;
-            targetRotationY += deltaY * 0.01;
-            
-            mouseX = event.clientX - windowHalfX;
-            mouseY = event.clientY - windowHalfY;
-        }
-        
-        // 鼠标释放事件
-        function onMouseUp() {
-            isDragging = false;
-        }
-        
-        // 触摸开始事件
-        function onTouchStart(event) {
-            if (event.touches.length === 1) {
-                // 单指触摸 - 旋转
-                const touch = event.touches[0];
-                touchStartX = touch.clientX;
-                touchStartY = touch.clientY;
-                isDragging = true;
-                event.preventDefault();
-            } else if (event.touches.length === 2) {
-                // 双指触摸 - 缩放
-                event.preventDefault();
-            }
-        }
-        
-        // 触摸移动事件
-        function onTouchMove(event) {
-            if (event.touches.length === 1 && isDragging) {
-                // 单指移动 - 旋转
-                const touch = event.touches[0];
-                const deltaX = touch.clientX - touchStartX;
-                const deltaY = touch.clientY - touchStartY;
-                
-                targetRotationX += deltaX * 0.01;
-                targetRotationY += deltaY * 0.01;
-                
-                touchStartX = touch.clientX;
-                touchStartY = touch.clientY;
-                event.preventDefault();
-            } else if (event.touches.length === 2) {
-                // 双指移动 - 缩放
-                const touch1 = event.touches[0];
-                const touch2 = event.touches[1];
-                
-                const currentDistance = Math.sqrt(
-                    Math.pow(touch2.clientX - touch1.clientX, 2) + 
-                    Math.pow(touch2.clientY - touch1.clientY, 2)
-                );
-                
-                // 初始距离存储在touchStartX/Y中
-                if (touchStartX === 0) {
-                    touchStartX = currentDistance;
-                } else {
-                    const scaleChange = currentDistance / touchStartX;
-                    targetZoom = Math.max(0.5, Math.min(2, targetZoom * scaleChange));
-                    touchStartX = currentDistance;
-                }
-                
-                event.preventDefault();
-            }
-        }
-        
-        // 触摸结束事件
-        function onTouchEnd(event) {
-            if (event.touches.length === 0) {
-                isDragging = false;
-                touchStartX = 0;
-                touchStartY = 0;
-            }
-        }
-        
-        // 重置视角
-        function resetView() {
-            targetRotationX = 0;
-            targetRotationY = 0;
-            targetZoom = 1;
-            
-            // 更新按钮文本
-            const resetBtn = document.getElementById('resetBtn');
-            const originalHTML = resetBtn.innerHTML;
-            resetBtn.innerHTML = '<i class="fas fa-check"></i> 已重置';
-            
-            setTimeout(() => {
-                resetBtn.innerHTML = originalHTML;
-            }, 1500);
-        }
-        
-        // 切换特效
-        function toggleEffect() {
-            effectType = (effectType + 1) % 3;
-            const effectBtn = document.getElementById('effectBtn');
-            const effectNames = ['切换特效', '雪花飘落', '闪烁模式', '默认模式'];
-            const effectIcons = ['fa-magic', 'fa-snowflake', 'fa-sparkles', 'fa-star'];
-            
-            effectBtn.innerHTML = `<i class="fas ${effectIcons[effectType]}"></i> ${effectNames[effectType]}`;
-            
-            // 如果切回默认模式，重置粒子位置
-            if (effectType === 0) {
-                const positions = particleSystem.geometry.attributes.position.array;
-                for (let i = 0; i < positions.length; i++) {
-                    positions[i] = originalPositions[i];
-                }
-                particleSystem.geometry.attributes.position.needsUpdate = true;
-            }
-        }
-        
-        // 初始化
-        window.addEventListener('load', init);
-        
-        // 更新窗口半宽半高
-        window.addEventListener('resize', () => {
-            windowHalfX = window.innerWidth / 2;
-            windowHalfY = window.innerHeight / 2;
+            hands.onResults(handsResults => {
+                // Hand gesture logic goes here
+            });
+
+            const camera = new Camera(video, {
+                onFrame: async () => {
+                    await hands.send({ image: video });
+                },
+                width: 640,
+                height: 480
+            });
+            camera.start();
+
+            loadingText.style.display = 'none';
         });
-    </script>
+
+    window.addEventListener('resize', () => {
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    });
+
+    function animate() {
+        requestAnimationFrame(animate);
+        // Update particles and render
+        renderer.render(scene, camera);
+    }
+    animate();
+</script>
+
 </body>
 </html>
