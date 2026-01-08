@@ -1,96 +1,142 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <title>3D Particle Christmas Tree</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.9.1/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <style>
-        body { margin: 0; }
-        canvas { display: block; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>场馆详情页</title>
+  <!-- 引入CSS文件 -->
+  <link rel="stylesheet" href="style.css">
+  <!-- 定义CSS变量（你的CSS用到了这些变量，必须补充） -->
+  <style>
+    :root {
+      --text-primary: #333333;
+      --text-secondary: #666666;
+      --text-light: #999999;
+      --primary-color: #ff4d6d;
+      --white: #ffffff;
+      --border-color: #eeeeee;
+      --shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+    }
+    /* 适配rpx单位（浏览器不原生支持rpx，转换为rem） */
+    html {
+      font-size: calc(100vw / 75); /* 750rpx = 100vw，1rpx = 1/75 rem */
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+    }
+    /* 图标占位（你用的icon-*类需要实际图标库，这里先用文字占位） */
+    .icon-heart::before { content: "♥"; }
+    .icon-location::before { content: "📍"; }
+    .icon-check::before { content: "✓"; }
+  </style>
 </head>
 <body>
-
-<canvas id="canvas"></canvas>
-
-<script>
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas') });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    let particles;
-    const particleCount = 3000;
-    const particleGeometry = new THREE.BufferGeometry();
-    const positions = new Float32Array(particleCount * 3);
+  <!-- 容器 -->
+  <div class="container">
+    <!-- 轮播图 -->
+    <div class="detail-swiper">
+      <img src="https://picsum.photos/750/500" alt="场馆图片" class="detail-image">
+    </div>
     
-    for (let i = 0; i < particleCount; i++) {
-        positions[i * 3] = (Math.random() - 0.5) * 10;
-        positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
-        positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
-    }
+    <!-- 基本信息 -->
+    <div class="basic-info" style="background: white;">
+      <div class="venue-header">
+        <div class="venue-title">
+          <div class="venue-name">XX体育中心篮球馆</div>
+          <div class="venue-tags">
+            <span style="background: #f5f5f5; padding: 5rpx 15rpx; border-radius: 20rpx; font-size: 24rpx;">室内</span>
+            <span style="background: #f5f5f5; padding: 5rpx 15rpx; border-radius: 20rpx; font-size: 24rpx;">专业级</span>
+          </div>
+        </div>
+        <div class="venue-action">
+          <div class="favorite-btn active">
+            <span class="icon-heart"></span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 位置信息 -->
+      <div class="venue-location">
+        <span class="icon-location"></span>
+        <div class="location-text">北京市朝阳区建国路88号</div>
+      </div>
+      
+      <!-- 评分信息 -->
+      <div class="venue-rating-info">
+        <div class="rating-score">
+          <span class="score">4.8</span>
+          <span class="score-total">/5</span>
+        </div>
+        <div class="rating-stars">★★★★★</div>
+        <div class="review-count">128条评价</div>
+      </div>
+    </div>
     
-    particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    const particleMaterial = new THREE.PointsMaterial({ size: 0.1, vertexColors: true });
-    particles = new THREE.Points(particleGeometry, particleMaterial);
-    scene.add(particles);
-
-    camera.position.z = 5;
-
-    const loadingText = document.createElement('div');
-    loadingText.style.position = 'absolute';
-    loadingText.style.color = 'white';
-    loadingText.style.fontSize = '2rem';
-    loadingText.innerText = 'Loading...';
-    document.body.appendChild(loadingText);
-
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.play();
-
-            const hands = new Hands({locateFile: (file) => {
-                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-            });
-            hands.setOptions({
-                maxNumHands: 1,
-                minDetectionConfidence: 0.7,
-                minTrackingConfidence: 0.5
-            });
-            hands.onResults(handsResults => {
-                // Hand gesture logic goes here
-            });
-
-            const camera = new Camera(video, {
-                onFrame: async () => {
-                    await hands.send({ image: video });
-                },
-                width: 640,
-                height: 480
-            });
-            camera.start();
-
-            loadingText.style.display = 'none';
-        });
-
-    window.addEventListener('resize', () => {
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-    });
-
-    function animate() {
-        requestAnimationFrame(animate);
-        // Update particles and render
-        renderer.render(scene, camera);
-    }
-    animate();
-</script>
-
+    <!-- 价格信息 -->
+    <div class="price-info" style="background: white; border-radius: 0 0 20rpx 20rpx;">
+      <div class="price-item">
+        <div class="price-label">小时单价</div>
+        <div class="price-value">
+          <span class="main-price">180</span>
+          <span class="price-unit">元/小时</span>
+        </div>
+      </div>
+      <div class="price-note">
+        价格说明：周末及节假日价格上浮20%，包场可享9折优惠
+      </div>
+    </div>
+    
+    <!-- 详情区域 -->
+    <div class="detail-section" style="background: white; border-radius: 20rpx;">
+      <div class="detail-content">
+        XX体育中心篮球馆总面积1200平方米，拥有标准FIBA认证篮球场地，配备专业LED照明、电子计分牌、休息区、淋浴间等设施，是业余及专业篮球活动的理想场地。
+      </div>
+      <div class="detail-features">
+        <div class="feature-item">
+          <span class="icon-check"></span>
+          <div class="feature-text">标准实木地板</div>
+        </div>
+        <div class="feature-item">
+          <span class="icon-check"></span>
+          <div class="feature-text">免费停车</div>
+        </div>
+        <div class="feature-item">
+          <span class="icon-check"></span>
+          <div class="feature-text">24小时空调</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 评价区域 -->
+    <div class="reviews-section" style="background: white; border-radius: 20rpx;">
+      <div class="section-header">
+        <h3 style="margin: 0; font-size: 32rpx; color: var(--text-primary);">用户评价</h3>
+        <a href="#" class="see-all">查看全部</a>
+      </div>
+      <div class="review-item">
+        <div class="review-header">
+          <img src="https://picsum.photos/80/80" alt="用户头像" class="review-avatar">
+          <div class="review-user">
+            <div class="review-name">篮球爱好者</div>
+            <div class="review-time">2026-01-05</div>
+          </div>
+          <div class="review-rating">★★★★★</div>
+        </div>
+        <div class="review-content">
+          场地非常棒，地板脚感很好，设施齐全，性价比高，下次还来！
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 操作栏 -->
+  <div class="action-bar">
+    <div class="action-buttons">
+      <button class="btn-contact">联系商家</button>
+      <button class="btn-reserve">立即预订</button>
+    </div>
+  </div>
 </body>
 </html>
